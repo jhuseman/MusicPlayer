@@ -88,14 +88,15 @@ def playlist_maintain(music,min_items):
 			music.addSong(avail[rand])
 		time.sleep(0.5)
 
-def startMusicInterface(port):
+def startMusicInterface(port,mus_dir):
 	host = WebHost(port)
-	music = Music(mus_dir='/mnt/usb/Christmas/')
-	# music = Music(mus_dir='/mnt/c/Users/jdhus/Music/Christmas/')
+	music = Music(mus_dir=mus_dir)
 	MusicInterface(host,music)
 	thr = threading.Thread(target=host.start_service)
 	thr.start()
 	playlist_maintain(music,5)
 
 if __name__=="__main__":
-	startMusicInterface(80)
+	# mus_dir='/mnt/usb/Christmas/'
+	mus_dir='/mnt/c/Users/jdhus/OneDrive/Music/Christmas/'
+	startMusicInterface(80,mus_dir)

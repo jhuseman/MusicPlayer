@@ -1,0 +1,5 @@
+CherryPy==13.1.0
+Routes==2.4.1
+git+https://github.com/Ciantic/songdetails.git#egg=songdetails
+mpeg1audio==0.5.2
+git+https://github.com/Ciantic/pytagger.git#egg=pytagger
