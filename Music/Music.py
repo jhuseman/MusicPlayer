@@ -1,0 +1,128 @@
+from mplayer import *
+from SongInfo import *
+from listfiles import *
+import threading
+import time
+
+class Music:
+	def __init__(self,mus_dir=None):
+		self.songlist = []
+		self.songinfo = SongInfo()
+		self.currentsong = ''
+		self.mus_dir = mus_dir
+		self.mplay = mplayer(mus_dir=self.mus_dir)
+		self.keepUpdatedAsync()
+	
+	def __del__(self):
+		# stop all music playback here
+		if not self.update_thread is None:
+			self.updating = False
+			self.update_thread.join()
+		del self.mplay
+		del self.songinfo
+	
+	def getTime(self):
+		return self.mplay.getPos()
+	
+	def setSongList(self,list):
+		self.songlist = list
+	
+	def appendSongList(self,list):
+		self.songlist = self.songlist + list
+	
+	def getSongList(self):
+		return self.songlist
+	
+	def addSong(self,song):
+		self.songlist.append(song)
+	
+	def addSongPos(self,pos,song):
+		self.songlist.insert(pos,song)
+	
+	def removeSong(self,song):
+		self.songlist.remove(song)
+		self.songinfo.remove(song)
+	
+	def removeTopSong(self):
+		self.removeSong(self.songlist[0])
+	
+	def removeSongsBefore(self,song):
+		while self.songlist.index(song)>0:
+			self.removeTopSong()
+	
+	def moveSongPos(self,pos,song):
+		self.removeSong(song)
+		self.addSongPos(pos,song)
+	
+	def startSong(self,song):
+		self.currentsong = song
+		if not song in self.songlist:
+			self.addSongPos(0,song)
+		self.removeSongsBefore(song)
+		self.mplay.playFile(song)
+	
+	def pause(self):
+		self.mplay.pause()
+	
+	def unpause(self):
+		self.mplay.unpause()
+	
+	def update(self):
+		if self.mplay.getFinished():
+			# finished with current song - play next song in songlist (if there is one)
+			if len(self.songlist)>0:
+				# songlist not empty - choose next item after currentsong
+				if self.currentsong in self.songlist:
+					# currentsong in songlist - play next item
+					ind = self.songlist.index(self.currentsong)+1 # ind = index of next song after currentsong
+					if len(self.songlist)>ind:
+						# songlist long enough to contain song at ind - play next song
+						self.startSong(self.songlist[ind])
+					else:
+						# at end of songlist - empty list and don't play anything
+						self.songlist = []
+				else:
+					# currentsong not in songlist - play first song in list
+					self.startSong(self.songlist[0])
+		else:
+			# still playing song - check to make sure is still in songlist
+			if not self.currentsong in self.songlist:
+				# currentsong not in songlist - skip to first item in list
+				if len(self.songlist)>0:
+					# songlist not empty - play first song in list
+					self.startSong(self.songlist[0])
+				else:
+					# songlist empty - stop playback
+					self.mplay.stop()
+	
+	def keepUpdated(self):
+		self.updating = True
+		while self.updating:
+			self.update()
+			time.sleep(0.25)
+	
+	def keepUpdatedAsync(self):
+		self.update_thread = threading.Thread(target=self.keepUpdated)
+		self.update_thread.start()
+	
+	def getSongInfo(self,song):
+		return self.songinfo.getInfo(song)
+	
+	def getAllSongInfo(self):
+		return self.songinfo.getInfoList(self.songlist)
+	
+	def getAvailableSongs(self):
+		extensions = ['.mp3','.wma']
+		dir = self.mus_dir
+		if dir is None:
+			dir = './'
+		return limit_ext(listfiles(dir),extensions)
+	
+	def getDict(self):
+		return {
+			'current_song'	: self.currentsong,
+			'pos'			: self.mplay.getPos(),
+			'song_list'		: self.songlist,
+			'song_info'		: self.getAllSongInfo(),
+		}
+	
