@@ -18,6 +18,14 @@ function unpause() {
 	});
 }
 
+function setVolume(vol) {
+	WebRequest("GET","/set_vol/"+vol,"",function(text) {
+		// do nothing on return
+	},function(error) {
+		console.log("ERROR getting return from setVolume: "+error);
+	});
+}
+
 function skip_song() {
 	WebRequest("GET","/skip_song/","",function(text) {
 		// do nothing on return
@@ -261,6 +269,19 @@ function makeicon(icon) {
 	return img;
 }
 
+function makeslider(min,max,step,value,onchange) {
+	var slide = document.createElement('input');
+	slide.setAttribute('type',"range");
+	slide.setAttribute('min',min);
+	slide.setAttribute('max',max);
+	slide.setAttribute('step',step);
+	slide.setAttribute('value',value);
+	slide.addEventListener("change", function() {
+		onchange(slide.value);
+	}, false);
+	return slide;
+}
+
 function getcurrentsonglinks(song_info,pos) {
 	var play_pause = null;
 	if(pos['paused']) {
@@ -309,6 +330,12 @@ function update_cur_song(cur_song,song_info,pos) {
 		progress_bar.style.width=prog.toString() + "%";
 		var progress = makediv("progress progress-striped active",[progress_bar]);
 		cur_song.appendChild(progress);
+		var volume_val = pos['vol'];
+		var volume_slider = makeslider(0,100,1,volume_val,function(new_vol) {
+			setVolume(new_vol);
+		});
+		var volume = makediv("volume-slider",[volume_slider]);
+		cur_song.appendChild(volume);
 	}
 }
 

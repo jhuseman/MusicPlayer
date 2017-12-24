@@ -4,9 +4,10 @@ import os
 import time
 
 class mplayer:
-	def __init__(self,mus_dir=None,muted=False):
+	def __init__(self,mus_dir=None,muted=False,init_vol=100):
 		self.mus_dir = mus_dir
 		self.muted = muted
+		self.volume = init_vol
 		self.IOlock = threading.Lock()
 		self.player = None
 		if self.muted:
@@ -16,6 +17,7 @@ class mplayer:
 		self.getPaused()
 		if self.muted:
 			self.getCmdOutput('mute 1')
+		self.ensureVolumeSet()
 	
 	def __del__(self):
 		# stop all music playback here
@@ -101,6 +103,22 @@ class mplayer:
 		while self.isPaused():
 			self.getCmdOutput('pause')
 	
+	def ensureVolumeSet(self):
+		if self.muted:
+			self.getCmdOutput('volume 0 1')
+			self.getCmdOutput('mute 1')
+		else:
+			self.getCmdOutput('volume '+str(int(self.volume))+' 1')
+			self.getCmdOutput('mute 0')
+	
+	def setVolume(self,volume):
+		self.volume = int(volume)
+		if self.volume<0:
+			self.volume = 0
+		if self.volume>100:
+			self.volume = 100
+		self.ensureVolumeSet()
+	
 	def playFile(self,filename):
 		if self.fileExists(filename):
 			out = self.getCmdOutput('loadfile "'+filename+'"')
@@ -112,15 +130,11 @@ class mplayer:
 						spl = item.split(':',1)
 						if len(spl)>=2:
 							info[spl[0].strip()] = spl[1].strip()
-				if self.muted:
-					self.getCmdOutput('volume 0 1')
-					self.getCmdOutput('mute 1')
+				self.ensureVolumeSet()
 				return info
 			except:
 				print out
-				if self.muted:
-					self.getCmdOutput('volume 0 1')
-					self.getCmdOutput('mute 1')
+				self.ensureVolumeSet()
 				return {'filename': filename}
 		else:
 			return None
@@ -129,6 +143,7 @@ class mplayer:
 		length = self.getCmdProperty('get_time_length')
 		pos = self.getCmdProperty('get_time_pos')
 		paused = self.isPaused()
+		vol = self.volume
 		if length == None:
 			length = 1.0
 		else:
@@ -143,6 +158,7 @@ class mplayer:
 			'pos'		: pos,
 			'fraction'	: fraction,
 			'paused'	: paused,
+			'vol'		: vol,
 		}
 	
 	def getFinished(self):

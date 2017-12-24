@@ -17,6 +17,7 @@ class MusicInterface(WebInterface):
 		self.connect('/add_song/:song','ADD_SONG','GET')
 		self.connect('/add_song/:song/:pos','ADD_SONG_POS','GET')
 		self.connect('/del_song/:song','DEL_SONG','GET')
+		self.connect('/set_vol/:vol','SET_VOL','GET')
 		self.connect('/skip_song/','DEL_TOP_SONG','GET')
 		self.connect('/clear_playlist/','CLEAR_SONGS','GET')
 		self.connect('/avail_songs/','GET_AVAIL_SONGS','GET')
@@ -42,6 +43,11 @@ class MusicInterface(WebInterface):
 	def DEL_SONG(self,song):
 		"""remove song from playlist"""
 		self.music.removeSong(decode_song_id(song))
+		return json.dumps(self.music.getDict(), indent=4)
+	
+	def SET_VOL(self,vol):
+		"""set volume of playback"""
+		self.music.setVol(int(vol))
 		return json.dumps(self.music.getDict(), indent=4)
 	
 	def DEL_TOP_SONG(self):

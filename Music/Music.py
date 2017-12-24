@@ -67,6 +67,9 @@ class Music:
 	def unpause(self):
 		self.mplay.unpause()
 	
+	def setVol(self,vol):
+		self.mplay.setVolume(vol)
+	
 	def update(self):
 		if self.mplay.getFinished():
 			# finished with current song - play next song in songlist (if there is one)
