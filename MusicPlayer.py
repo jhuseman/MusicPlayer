@@ -103,6 +103,6 @@ def startMusicInterface(port,mus_dir):
 	playlist_maintain(music,5)
 
 if __name__=="__main__":
-	# mus_dir='/mnt/usb/Christmas/'
-	mus_dir='/mnt/c/Users/jdhus/OneDrive/Music/Christmas/'
+	mus_dir='/mnt/usb/Christmas/'
+	# mus_dir='/mnt/c/Users/jdhus/OneDrive/Music/Christmas/'
 	startMusicInterface(80,mus_dir)
