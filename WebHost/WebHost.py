@@ -324,7 +324,7 @@ class WebDocs(WebInterface):
 		resources = ""
 		for resource in self.host.resource_list:
 			if resource["docstring"] is None:
-				resource["docstring"] = "<No docs provided!>"
+				resource["docstring"] = "&lt;No docs provided!&gt;"
 			resource_html = """
 				<tr>
 					<td><a href="{resource}">{resource}</a></td>
