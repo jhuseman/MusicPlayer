@@ -3,5 +3,4 @@
 
 # __init__.py
 #  init file for WebHost package
-import cherrypy
 from WebHost import *

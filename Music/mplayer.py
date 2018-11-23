@@ -133,7 +133,7 @@ class mplayer:
 				self.ensureVolumeSet()
 				return info
 			except:
-				print out
+				print(out)
 				self.ensureVolumeSet()
 				return {'filename': filename}
 		else:
