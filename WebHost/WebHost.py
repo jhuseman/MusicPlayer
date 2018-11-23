@@ -323,6 +323,8 @@ class WebDocs(WebInterface):
 		"""return the documentation page in HTML format"""
 		resources = ""
 		for resource in self.host.resource_list:
+			if resource["docstring"] is None:
+				resource["docstring"] = "<No docs provided!>"
 			resource_html = """
 				<tr>
 					<td><a href="{resource}">{resource}</a></td>
