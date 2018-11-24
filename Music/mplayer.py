@@ -2,7 +2,7 @@ import mpv
 # import subprocess
 # import threading
 import os
-# import time
+import time
 
 class mplayer:
 	def __init__(self,mus_dir=None,muted=False,init_vol=100):
@@ -127,9 +127,20 @@ class mplayer:
 		self.ensureVolumeSet()
 	
 	def playFile(self,filename):
+		self.player.command('stop')
+		print('loading file {}'.format(filename))
 		if self.fileExists(filename):
 			self.player.command('loadfile',filename)
 			self.ensureVolumeSet()
+			p = ''
+			while p != filename:
+				try:
+					p = self.getProperty('path')
+				except mpv.MPVError:
+					pass
+				if p != filename:
+					print('waiting for file to load...')
+					time.sleep(0.1)
 			return {'filename': filename}
 		else:
 			return None
