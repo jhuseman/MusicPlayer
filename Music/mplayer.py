@@ -1,90 +1,95 @@
-import subprocess
-import threading
+import mpv
+# import subprocess
+# import threading
 import os
-import time
+# import time
 
 class mplayer:
 	def __init__(self,mus_dir=None,muted=False,init_vol=100):
 		self.mus_dir = mus_dir
 		self.muted = muted
 		self.volume = init_vol
-		self.IOlock = threading.Lock()
-		self.player = None
+		# self.IOlock = threading.Lock()
+		# self.player = None
+		self.player = mpv.context()
+		self.player.initialize()
+		# # # # # # # if self.muted:
+		# # # # # # # 	self.player = subprocess.Popen(['mplayer','-slave','-quiet','-idle','-nosound'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=self.mus_dir)
+		# # # # # # # else:
+		# # # # # # # 	self.player = subprocess.Popen(['mplayer','-slave','-quiet','-idle'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=self.mus_dir)
+		# self.getPaused()
 		if self.muted:
-			self.player = subprocess.Popen(['mplayer','-slave','-quiet','-idle','-nosound'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=self.mus_dir)
-		else:
-			self.player = subprocess.Popen(['mplayer','-slave','-quiet','-idle'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=self.mus_dir)
-		self.getPaused()
-		if self.muted:
-			self.getCmdOutput('mute 1')
+			self.player.set_property('mute',True)
 		self.ensureVolumeSet()
 	
 	def __del__(self):
 		# stop all music playback here
-		with self.IOlock:
-			self.sendCmd('quit')
-		self.player.wait()
+		# with self.IOlock:
+		self.player.command('stop')
+		self.player.command('quit')
+		# self.player.wait()
 	
-	def sendCmd(self,cmd):
-		self.player.stdin.write('\n')
-		time.sleep(0.1)
-		self.player.stdin.write(cmd)
-		self.player.stdin.write('\n')
+	# def runCommand(self,cmd):
+	# 	self.player.command(*cmd)
+	# 	# self.player.stdin.write('\n')
+	# 	# time.sleep(0.1)
+	# 	# self.player.stdin.write(cmd)
+	# 	# self.player.stdin.write('\n')
 	
-	def getLine(self):
-		return self.player.stdout.readline()
+	# def getLine(self):
+	# 	# DEPRECATED!
+	# 	return self.player.stdout.readline()
 	
-	def getOutputData(self):
-		out_data = []
-		self.sendCmd('get_property pause')
-		line = self.getLine()
-		while not line.startswith('ANS_pause='):
-			out_data.append(line.rstrip())
-			line = self.getLine()
-		return out_data
+	# def getOutputData(self):
+	# DEPRECATED!
+	# 	out_data = []
+	# 	# self.sendCmd('get_property pause')
+	# 	line = self.getLine()
+	# 	while not line.startswith('ANS_pause='):
+	# 		out_data.append(line.rstrip())
+	# 		line = self.getLine()
+	# 	return out_data
 	
 	def getPaused(self):
-		with self.IOlock:
-			self.sendCmd('get_property pause')
-			line = self.getLine()
-			while not line.startswith('ANS_pause='):
-				line = self.getLine()
-		return [line.rstrip()]
+		return self.player.get_property('pause')
 	
-	def isPaused(self):
-		return self.parseResults(self.getPaused())['ANS_pause']=='yes'
+	# def getPaused(self):
+	# 	return self.getPaused()
 	
-	def getCmdOutput(self,cmd):
-		self.getPaused()
-		if cmd=='get_property pause':
-			return self.getPaused()
-		else:
-			with self.IOlock:
-				self.sendCmd(cmd)
-				return self.getOutputData()
+	# def runCommand(self,cmd):
+	# 	# self.getPaused()
+	# 	# if cmd==['get_property','pause']:
+	# 	# 	return self.getPaused()
+	# 	# else:
+	# 	# with self.IOlock:
+	# 	self.sendCmd(cmd)
+	# 	# return self.getOutputData()
 	
-	def parseResults(self,results):
-		info = {}
-		for item in results:
-			spl = item.split('=',1)
-			if len(spl)>=2:
-				info[spl[0].strip()] = spl[1].strip()
-		return info
+	# def parseResults(self,results):
+	# 	# DEPRECATED!
+	# 	info = {}
+	# 	for item in results:
+	# 		spl = item.split('=',1)
+	# 		if len(spl)>=2:
+	# 			info[spl[0].strip()] = spl[1].strip()
+	# 	return info
 	
-	def getFirstResult(self,results):
-		parsed = self.parseResults(results)
-		keys = parsed.keys()
-		if len(keys)>0:
-			key = keys[0]
-			return parsed[key]
-		else:
-			return None
+	# def getFirstResult(self,results):
+	# 	# DEPRECATED!
+	# 	parsed = self.parseResults(results)
+	# 	keys = parsed.keys()
+	# 	if len(keys)>0:
+	# 		key = keys[0]
+	# 		return parsed[key]
+	# 	else:
+	# 		return None
 	
-	def getCmdProperty(self,cmd):
-		return self.getFirstResult(self.getCmdOutput(cmd))
+	# def getCmdProperty(self,cmd):
+	# DEPRECATED!
+	# 	return self.getFirstResult(self.runCommand(cmd))
 	
 	def getProperty(self,property):
-		return self.getCmdProperty('get_property '+property)
+		return self.player.get_property(property)
 	
 	def fileExists(self,filename):
 		path = filename
@@ -93,23 +98,25 @@ class mplayer:
 		return os.path.isfile(path)
 	
 	def stop(self):
-		self.getCmdOutput('stop')
+		self.player.command('stop')
 	
 	def pause(self):
-		while not self.isPaused():
-			self.getCmdOutput('pause')
+		self.player.set_property('pause',True)
+		# while not self.getPaused():
+		# 	self.player.command('pause')
 	
 	def unpause(self):
-		while self.isPaused():
-			self.getCmdOutput('pause')
+		self.player.set_property('pause',False)
+		# while self.getPaused():
+		# 	self.player.command('pause')
 	
 	def ensureVolumeSet(self):
 		if self.muted:
-			self.getCmdOutput('volume 0 1')
-			self.getCmdOutput('mute 1')
+			self.player.set_property('volume',0)
+			self.player.set_property('mute',True)
 		else:
-			self.getCmdOutput('volume '+str(int(self.volume))+' 1')
-			self.getCmdOutput('mute 0')
+			self.player.set_property('volume',int(self.volume))
+			self.player.set_property('mute',False)
 	
 	def setVolume(self,volume):
 		self.volume = int(volume)
@@ -121,28 +128,16 @@ class mplayer:
 	
 	def playFile(self,filename):
 		if self.fileExists(filename):
-			out = self.getCmdOutput('loadfile "'+filename+'"')
-			try:
-				info = {'filename': filename}
-				ind = out.index('Clip info:')
-				for item in out[ind+1:]:
-					if item.startswith(' '):
-						spl = item.split(':',1)
-						if len(spl)>=2:
-							info[spl[0].strip()] = spl[1].strip()
-				self.ensureVolumeSet()
-				return info
-			except:
-				print(out)
-				self.ensureVolumeSet()
-				return {'filename': filename}
+			self.player.command('loadfile','"{filename}"'.format(filename=filename))
+			self.ensureVolumeSet()
+			return {'filename': filename}
 		else:
 			return None
 	
 	def getPos(self):
-		length = self.getCmdProperty('get_time_length')
-		pos = self.getCmdProperty('get_time_pos')
-		paused = self.isPaused()
+		length = self.getProperty('length')
+		pos = self.getProperty('time-pos')
+		paused = self.getPaused()
 		vol = self.volume
 		if length == None:
 			length = 1.0
@@ -162,5 +157,5 @@ class mplayer:
 		}
 	
 	def getFinished(self):
-		return self.getPos()['fraction']==1.0
+		return self.getPos()['fraction']>=1.0
 	
