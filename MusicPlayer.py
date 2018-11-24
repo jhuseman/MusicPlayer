@@ -87,12 +87,15 @@ class MusicInterface(WebInterface):
 
 
 def playlist_maintain(music,min_items):
-	while True:
-		if len(music.getSongList())<min_items:
-			avail = music.getAvailableSongs()
-			rand = random.randint(0,len(avail)-1)
-			music.addSong(avail[rand])
-		time.sleep(0.5)
+	try:
+		while True:
+			if len(music.getSongList())<min_items:
+				avail = music.getAvailableSongs()
+				rand = random.randint(0,len(avail)-1)
+				music.addSong(avail[rand])
+			time.sleep(0.5)
+	except KeyboardInterrupt:
+		pass
 
 def startMusicInterface(port,mus_dir):
 	host = WebHost(port)
@@ -101,6 +104,9 @@ def startMusicInterface(port,mus_dir):
 	thr = threading.Thread(target=host.start_service)
 	thr.start()
 	playlist_maintain(music,5)
+	# exiting after returns - shut everything down!
+	del music
+	host.stop_service()
 
 if __name__=="__main__":
 	mus_dir='/mnt/usb/Christmas/'

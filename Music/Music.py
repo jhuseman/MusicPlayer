@@ -18,6 +18,7 @@ class Music:
 		if not self.update_thread is None:
 			self.updating = False
 			self.update_thread.join()
+		self.mplay.stop()
 		del self.mplay
 		del self.songinfo
 	

@@ -11,7 +11,7 @@ class mplayer:
 		self.volume = init_vol
 		# self.IOlock = threading.Lock()
 		# self.player = None
-		self.player = mpv.context()
+		self.player = mpv.Context()
 		self.player.initialize()
 		# # # # # # # if self.muted:
 		# # # # # # # 	self.player = subprocess.Popen(['mplayer','-slave','-quiet','-idle','-nosound'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=self.mus_dir)
