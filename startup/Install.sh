@@ -4,7 +4,7 @@ export executable=MusicPlayer.py
 export workingdir=/home/pi/MusicPlayer
 export service_name=MusicPlayer
 export service_description="Runs the Music player script on startup, \nto play music!"
-export runuser=pi
+export runuser=root
 
 export REPLACE_VAR_PROVIDES=$service_name
 export REPLACE_VAR_EXECUTABLE=$executable

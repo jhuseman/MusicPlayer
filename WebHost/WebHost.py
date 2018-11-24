@@ -21,6 +21,10 @@ import mimetypes
 import json
 import os
 
+from urllib import unquote as url_decode
+# # for python3:
+# from urllib import parse.unquote as url_decode
+
 WebServerNameAndVer = "WebHost/1.0.0"
 
 def generate_redirect_page(dest):
@@ -156,7 +160,10 @@ class WebDispatcher(object):
 				ret.append((prefix, param_count, params))
 				param_count = param_count-1
 				params = removed[:param_count]
-			ret.append((prefix, param_count, params))
+			params_decoded = []
+			for par in params:
+				params_decoded.append(url_decode(par))
+			ret.append((prefix, param_count, params_decoded))
 			removed = [remaining[-1]] + removed
 			remaining = remaining[:-1]
 		return ret
