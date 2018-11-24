@@ -143,7 +143,10 @@ class mplayer:
 		try:
 			length = self.getProperty('duration')
 		except mpv.MPVError as e:
-			if not pos is None:
+			if pos is None:
+				print("ERROR duration: {}".format(e))
+				length = None
+			else:
 				try:
 					rem = self.getProperty('time-remaining')
 					length = rem + pos
