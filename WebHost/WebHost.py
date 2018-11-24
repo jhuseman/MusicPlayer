@@ -20,6 +20,7 @@ import BaseHTTPServer
 import mimetypes
 import json
 import os
+import traceback
 
 from urllib import unquote as url_decode
 # # for python3:
@@ -104,13 +105,18 @@ class WebDispatcher(object):
 			else:
 				body_len = int(body_len_str)
 				body = self.rfile.read(body_len)
-			ret_data = callback(url=self.path, method=self.command, headers=self.headers, body=body)
-			if ret_data is None:
-				self.send_header_as_code(404, '404.html')
-				self.wfile.write(self.get_404_page(url=self.path))
-			else:
-				self.do_HEAD()
-				self.wfile.write(ret_data)
+			try:
+				ret_data = callback(url=self.path, method=self.command, headers=self.headers, body=body)
+				if ret_data is None:
+					self.send_header_as_code(404, '404.html')
+					self.wfile.write(self.get_404_page(url=self.path))
+				else:
+					self.do_HEAD()
+					self.wfile.write(ret_data)
+			except:
+				tb = traceback.format_exc()
+				self.send_header_as_code(500, '500.html')
+				self.wfile.write(self.get_500_page(tb=tb, url=self.path))
 		
 		def log_message(self, format, *args):
 			if not self.log_string is None:
@@ -123,9 +129,14 @@ class WebDispatcher(object):
 			print(data)
 		
 		def get_404_page(self, url=""):
-			return "<head><title>Error response</title></head>"+ \
-			"<body><h1>Error response</h1><p>Error code 404.<p>Message: Unsupported method ('POST')."+ \
-			"<p>Error code explanation: 404 = Nothing matches the given URI.</body>"
+			return ('<head><title>Error 404: Not Found</title></head>'+ \
+			'<body><h1>Error response</h1><p>Error code 404.<p>Message: The URI "{url}" is not available.'+ \
+			'<p>Error code explanation: 404 = Nothing matches the given URI.</body>').format(url=url)
+		
+		def get_500_page(self, tb="", url=""):
+			return ('<head><title>Error 500: Internal Server Error</title></head>'+ \
+			'<body><h1>Error response</h1><p>Error code 500.<p>Message: The server encountered an error processing the request "{url}".'+ \
+			'<p>Error code explanation: <br /> <br />{tb}</body>').format(url=url, tb=tb.replace('\n','<br />\n'))
 	
 	def __init__(self, host="0.0.0.0", port=80, log_function=None, staticdir="static", staticindex="index.html", error_404_page_func=None):
 		self.host = host
