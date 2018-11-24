@@ -136,15 +136,20 @@ class mplayer:
 	
 	def getPos(self):
 		try:
-			length = self.getProperty('duration')
-		except mpv.MPVError as e:
-			print("ERROR: {}".format(e))
-			length = None
-		try:
 			pos = self.getProperty('time-pos')
 		except mpv.MPVError as e:
-			print("ERROR: {}".format(e))
+			print("ERROR time-pos: {}".format(e))
 			pos = None
+		try:
+			length = self.getProperty('duration')
+		except mpv.MPVError as e:
+			if not pos is None:
+				try:
+					rem = self.getProperty('time-remaining')
+					length = rem + pos
+				except mpv.MPVError as e:
+					print("ERROR time-remaining: {}".format(e))
+					length = None
 		paused = self.getPaused()
 		vol = self.volume
 		if length == None:
