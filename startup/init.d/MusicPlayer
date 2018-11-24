@@ -1,0 +1,88 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          MusicPlayer
+# Required-Start:    $local_fs $network $named $time $syslog
+# Required-Stop:     $local_fs $network $named $time $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Description:       Runs the Music player script on startup, 
+#                    to play music!
+### END INIT INFO
+
+CONFIG_PROVIDES=MusicPlayer
+CONFIG_EXECUTABLE=MusicPlayer.py
+CONFIG_WORKINGDIR=/home/pi/MusicPlayer
+CONFIG_START_SCRIPT_FOLDER=/home/pi/MusicPlayer/startup
+CONFIG_RUNAS=pi
+
+PROVIDES_VARIABLE=$CONFIG_PROVIDES
+START_EXE_PATH=$CONFIG_EXECUTABLE
+START_EXE_SCREEN_NAME=INIT_D_$PROVIDES_VARIABLE
+START_WORKING_DIR=$CONFIG_WORKINGDIR
+START_SCRIPT_FOLDER=$CONFIG_START_SCRIPT_FOLDER
+START_SCRIPT_FILENAME=StartBackground.sh
+STOP_SCRIPT_FILENAME=StopBackground.sh
+START_SCRIPT_PATH=$START_SCRIPT_FOLDER/$START_SCRIPT_FILENAME
+STOP_SCRIPT_PATH=$START_SCRIPT_FOLDER/$STOP_SCRIPT_FILENAME
+START_CMD="$START_SCRIPT_PATH $START_WORKING_DIR $START_EXE_SCREEN_NAME $START_EXE_PATH"
+STOP_CMD="$STOP_SCRIPT_PATH $START_EXE_SCREEN_NAME"
+RUNAS=$CONFIG_RUNAS
+
+PIDFILE=/var/run/$PROVIDES_VARIABLE.pid
+LOGFILE=/var/log/$PROVIDES_VARIABLE.log
+
+start() {
+	if [ -f /var/run/$PIDNAME ] && kill -0 $(cat /var/run/$PIDNAME); then
+		echo 'Service starter already running!' >&2
+		return 1
+	fi
+	echo 'Starting service...' >&2
+	local CMD="$START_CMD &> \"$LOGFILE\" & echo \$!"
+	echo $CMD
+	touch $LOGFILE
+	chmod 662 $LOGFILE
+	su -c "$CMD" $RUNAS > "$PIDFILE"
+	echo 'Service started' >&2
+}
+
+stop() {
+	if [ -f "$PIDFILE" ] && kill -0 $(cat "$PIDFILE"); then
+		echo 'Service starter still running! Killing...' >&2
+		kill -15 $(cat "$PIDFILE") && rm -f "$PIDFILE"
+	fi
+	echo 'Stopping service...' >&2
+	local CMD="$STOP_CMD"
+	su -c "$CMD" $RUNAS
+	echo 'Service stopped' >&2
+}
+
+uninstall() {
+	echo -n "Are you really sure you want to uninstall this service? That cannot be undone. [yes|No] "
+	local SURE
+	read SURE
+	if [ "$SURE" = "yes" ]; then
+		stop
+		rm -f "$PIDFILE"
+		echo "Notice: log file is not be removed: '$LOGFILE'" >&2
+		update-rc.d -f $PROVIDES_VARIABLE remove
+		rm -fv "$0"
+	fi
+}
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	uninstall)
+		uninstall
+		;;
+	retart)
+		stop
+		start
+		;;
+	*)
+	echo "Usage: $0 {start|stop|restart|uninstall}"
+esac
