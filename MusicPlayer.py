@@ -97,9 +97,9 @@ def playlist_maintain(music,min_items):
 	except KeyboardInterrupt:
 		pass
 
-def startMusicInterface(port,mus_dir):
+def startMusicInterface(port,mus_dir, init_vol=75, init_paused=True):
 	host = WebHost(port)
-	music = Music(mus_dir=mus_dir)
+	music = Music(mus_dir=mus_dir, init_vol=init_vol, init_paused=init_paused)
 	MusicInterface(host,music)
 	thr = threading.Thread(target=host.start_service)
 	thr.start()
@@ -111,4 +111,4 @@ def startMusicInterface(port,mus_dir):
 if __name__=="__main__":
 	mus_dir='/mnt/usb/Christmas/'
 	# mus_dir='/mnt/c/Users/jdhus/OneDrive/Music/Christmas/'
-	startMusicInterface(80,mus_dir)
+	startMusicInterface(80,mus_dir, init_vol=75, init_paused=True)
