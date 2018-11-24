@@ -135,7 +135,7 @@ class mplayer:
 			return None
 	
 	def getPos(self):
-		length = self.getProperty('length')
+		length = self.getProperty('duration')
 		pos = self.getProperty('time-pos')
 		paused = self.getPaused()
 		vol = self.volume
