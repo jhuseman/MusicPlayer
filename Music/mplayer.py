@@ -137,12 +137,12 @@ class mplayer:
 	def getPos(self):
 		try:
 			length = self.getProperty('duration')
-		except MPVError as e:
+		except mpv.MPVError as e:
 			print("ERROR: {}".format(e))
 			length = None
 		try:
 			pos = self.getProperty('time-pos')
-		except MPVError as e:
+		except mpv.MPVError as e:
 			print("ERROR: {}".format(e))
 			pos = None
 		paused = self.getPaused()
