@@ -5,12 +5,14 @@ import threading
 import time
 
 class Music:
-	def __init__(self,mus_dir=None):
+	def __init__(self,mus_dir=None, init_vol=75, init_paused=True):
 		self.songlist = []
 		self.songinfo = SongInfo()
 		self.currentsong = ''
 		self.mus_dir = mus_dir
-		self.mplay = mplayer(mus_dir=self.mus_dir)
+		self.mplay = mplayer(mus_dir=self.mus_dir, init_vol=75)
+		if init_paused:
+			self.mplay.pause()
 		self.keepUpdatedAsync()
 	
 	def __del__(self):
