@@ -15,8 +15,8 @@ class Music:
 	
 	def __del__(self):
 		# stop all music playback here
+		self.updating = False
 		if not self.update_thread is None:
-			self.updating = False
 			self.update_thread.join()
 		self.mplay.stop()
 		del self.mplay

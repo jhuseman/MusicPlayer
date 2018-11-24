@@ -128,7 +128,7 @@ class mplayer:
 	
 	def playFile(self,filename):
 		if self.fileExists(filename):
-			self.player.command('loadfile','"{filename}"'.format(filename=filename))
+			self.player.command('loadfile',filename)
 			self.ensureVolumeSet()
 			return {'filename': filename}
 		else:
