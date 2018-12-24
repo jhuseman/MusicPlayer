@@ -105,18 +105,25 @@ class WebDispatcher(object):
 			else:
 				body_len = int(body_len_str)
 				body = self.rfile.read(body_len)
+			ret_code = 200
+			file_path = self.path
 			try:
 				ret_data = callback(url=self.path, method=self.command, headers=self.headers, body=body)
-				if ret_data is None:
-					self.send_header_as_code(404, '404.html')
-					self.wfile.write(self.get_404_page(url=self.path))
-				else:
-					self.do_HEAD()
-					self.wfile.write(ret_data)
 			except:
 				tb = traceback.format_exc()
-				self.send_header_as_code(500, '500.html')
-				self.wfile.write(self.get_500_page(tb=tb, url=self.path))
+				ret_data = self.get_500_page(tb=tb, url=self.path)
+				ret_code = 500
+				file_path = '500.html'
+			try:
+				if ret_data is None:
+					ret_data = self.get_404_page(url=self.path)
+					ret_code = 404
+					file_path = '404.html'
+				self.send_header_as_code(ret_code, file_path)
+				self.wfile.write(ret_data)
+			except:
+				#TODO: handle exception here
+				print("An error occurred!!! [TODO: show more info!]")
 		
 		def log_message(self, format, *args):
 			if not self.log_string is None:
@@ -234,7 +241,13 @@ class WebDispatcher(object):
 	def start_service(self):
 		self.service_running = True
 		while self.service_running:
-			self.httpd.handle_request()
+			try:
+				self.httpd.handle_request()
+			except KeyboardInterrupt:
+				self.service_running = False
+			except:
+				#TODO: handle exception more gracefully!!!
+				print("An Exception Occurred!!! [TODO: handle error properly!!!]")
 		self.httpd.server_close()
 		self.service_running = False
 	

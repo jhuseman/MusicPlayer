@@ -4,3 +4,4 @@
 # __init__.py
 #  init file for WebHost package
 from WebHost import *
+from WebHostOld import *

@@ -98,7 +98,7 @@ def playlist_maintain(music,min_items):
 		pass
 
 def startMusicInterface(port,mus_dir, init_vol=75, init_paused=True):
-	host = WebHost(port)
+	host = WebHostOld(port)
 	music = Music(mus_dir=mus_dir, init_vol=init_vol, init_paused=init_paused)
 	MusicInterface(host,music)
 	thr = threading.Thread(target=host.start_service)
