@@ -16,13 +16,21 @@ class Music:
 		self.keepUpdatedAsync()
 	
 	def __del__(self):
+		self.shutdown()
+	
+	def shutdown(self):
 		# stop all music playback here
 		self.updating = False
 		if not self.update_thread is None:
 			self.update_thread.join()
-		self.mplay.stop()
-		del self.mplay
-		del self.songinfo
+			self.update_thread = None
+		if self.mplay is not None:
+			self.mplay.stop()
+			del self.mplay
+			self.mplay = None
+		if self.songinfo is not None:
+			del self.songinfo
+			self.songinfo = None
 	
 	def getTime(self):
 		return self.mplay.getPos()

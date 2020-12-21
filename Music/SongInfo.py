@@ -5,7 +5,7 @@ class SongInfo:
 		self.songdict = {}
 	
 	def __del__(self):
-		for song in self.songdict:
+		for song in list(self.songdict.keys()):
 			self.remove(song)
 	
 	def remove(self,song):

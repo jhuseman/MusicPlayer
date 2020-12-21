@@ -111,6 +111,7 @@ def startMusicInterface(port,mus_dir, init_vol=75, init_paused=True):
 	thr.start()
 	playlist_maintain(music,5)
 	# exiting after returns - shut everything down!
+	music.shutdown()
 	del music
 	host.stop_service()
 
