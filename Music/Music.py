@@ -116,7 +116,7 @@ class Music:
 			time.sleep(0.25)
 	
 	def keepUpdatedAsync(self):
-		self.update_thread = threading.Thread(target=self.keepUpdated)
+		self.update_thread = threading.Thread(target=self.keepUpdated, name='PlaybackManager')
 		self.update_thread.start()
 	
 	def getSongInfo(self,song):

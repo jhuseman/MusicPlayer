@@ -13,11 +13,12 @@ def decode_song_id(id):
 	return id
 
 class MusicInterface():
-	def __init__(self,host,music):
-		self.host = host
+	def __init__(self,port,mus_dir, init_vol=75, init_paused=True):
+		self.host = guavacado.WebHost()
+		self.host.add_addr(port=port)
+		self.music = Music.Music(mus_dir=mus_dir, init_vol=init_vol, init_paused=init_paused)
 		self.web_interface = guavacado.WebInterface(host=self.host)
 		self.web_files = guavacado.WebFileInterface(host=self.host, staticdir='static')
-		self.music = music
 		self.web_interface.connect('/songs/',self.GET_SONGS,'GET')
 		self.web_interface.connect('/add_song/:song',self.ADD_SONG,'GET')
 		self.web_interface.connect('/add_song/:song/:pos',self.ADD_SONG_POS,'GET')
@@ -90,32 +91,30 @@ class MusicInterface():
 		self.music.unpause()
 		return json.dumps(self.music.getDict(), indent=4)
 
-
-def playlist_maintain(music,min_items):
-	try:
-		while True:
-			if len(music.getSongList())<min_items:
-				avail = music.getAvailableSongs()
+	def playlist_maintain(self,min_items):
+		while not self.stopping:
+			if len(self.music.getSongList())<min_items:
+				avail = self.music.getAvailableSongs()
 				if len(avail) > 0:
 					rand = random.randint(0,len(avail)-1)
-					if avail[rand] not in music.getSongList():
-						music.addSong(avail[rand])
+					if avail[rand] not in self.music.getSongList():
+						self.music.addSong(avail[rand])
 			time.sleep(0.5)
-	except KeyboardInterrupt:
-		pass
 
-def startMusicInterface(port,mus_dir, init_vol=75, init_paused=True):
-	host = guavacado.WebHost()
-	host.add_addr(port=port)
-	music = Music.Music(mus_dir=mus_dir, init_vol=init_vol, init_paused=init_paused)
-	MusicInterface(host,music)
-	thr = threading.Thread(target=host.start_service)
-	thr.start()
-	playlist_maintain(music,5)
-	# exiting after returns - shut everything down!
-	music.shutdown()
-	del music
-	host.stop_service()
+	def playlist_maintain_async(self, min_items):
+		self.playlist_maintain_thread = threading.Thread(target=self.playlist_maintain, args=(min_items,), name='PlaylistFiller')
+		self.playlist_maintain_thread.start()
+	
+	def start(self):
+		self.host.start_service()
+		self.stopping = False
+		self.playlist_maintain_async(5)
+		guavacado.wait_for_keyboardinterrupt()
+		# exiting after returns - shut everything down!
+		self.stopping = True
+		self.music.shutdown()
+		del music
+		self.host.stop_service()
 
 if __name__=="__main__":
 	parser = argparse.ArgumentParser(description='Play music out of a directory and host a web interface to configure it.')
@@ -132,4 +131,4 @@ if __name__=="__main__":
 	# mus_dir='/mnt/c/Users/jdhus/OneDrive/Music/Christmas/'
 	# mus_dir='C:\\Users\\jdhus\\OneDrive\\Music\\Christmas\\'
 	# mus_dir='C:\\Users\\jhuseman\\OneDrive\\Music\\Christmas\\'
-	startMusicInterface(args.port_no,args.mus_dir, init_vol=args.init_vol, init_paused=args.init_paused)
+	MusicInterface(args.port_no,args.mus_dir, init_vol=args.init_vol, init_paused=args.init_paused).start()
