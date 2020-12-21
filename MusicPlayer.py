@@ -113,7 +113,7 @@ class MusicInterface():
 		# exiting after returns - shut everything down!
 		self.stopping = True
 		self.music.shutdown()
-		del music
+		del self.music
 		self.host.stop_service()
 
 if __name__=="__main__":
