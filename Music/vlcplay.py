@@ -9,13 +9,14 @@ class vlcplay:
 		self.volume = init_vol
 		self.player = None
 		self.ensureVolumeSet()
+		self.is_paused = False
 	
 	def __del__(self):
 		if self.player!=None:
 			self.player.stop()
 	
 	def getPaused(self):
-		return self.player.get_state()==vlc.State.Paused
+		return self.is_paused
 	
 	def fileExists(self,filename):
 		path = filename
@@ -28,12 +29,15 @@ class vlcplay:
 			self.player.stop()
 	
 	def pause(self):
+		self.is_paused = True
 		if self.player is not None:
 			self.player.pause()
 	
 	def unpause(self):
 		if self.getPaused():
-			self.player.play()
+			self.is_paused = False
+			if self.player is not None:
+				self.player.play()
 	
 	def ensureVolumeSet(self):
 		if self.player is not None:
@@ -58,10 +62,11 @@ class vlcplay:
 		if self.fileExists(filename):
 			self.player = vlc.MediaPlayer(filename)
 			self.ensureVolumeSet()
-			self.player.play()
-			while self.player.get_state()!=vlc.State.Playing:
-				print('waiting for file to load...')
-				time.sleep(0.1)
+			if not self.is_paused:
+				self.player.play()
+				while self.player.get_state()!=vlc.State.Playing:
+					print('waiting for file to load...')
+					time.sleep(0.1)
 			return {'filename': filename}
 		else:
 			return None
