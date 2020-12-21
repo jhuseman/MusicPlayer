@@ -1,16 +1,16 @@
-from mplayer import *
-from SongInfo import *
-from listfiles import *
+from . import vlcplay
+from . import SongInfo
+from . import listfiles
 import threading
 import time
 
 class Music:
 	def __init__(self,mus_dir=None, init_vol=75, init_paused=True):
 		self.songlist = []
-		self.songinfo = SongInfo()
+		self.songinfo = SongInfo.SongInfo()
 		self.currentsong = ''
 		self.mus_dir = mus_dir
-		self.mplay = mplayer(mus_dir=self.mus_dir, init_vol=75)
+		self.mplay = vlcplay.vlcplay(mus_dir=self.mus_dir, init_vol=75)
 		if init_paused:
 			self.mplay.pause()
 		self.keepUpdatedAsync()
@@ -122,7 +122,7 @@ class Music:
 		dir = self.mus_dir
 		if dir is None:
 			dir = './'
-		return limit_ext(listfiles(dir),extensions)
+		return listfiles.limit_ext(listfiles.listfiles(dir),extensions)
 	
 	def getDict(self):
 		return {

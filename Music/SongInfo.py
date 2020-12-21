@@ -1,15 +1,12 @@
-# from mplayer import *
-import songdetails
+import tinytag
 
 class SongInfo:
 	def __init__(self):
 		self.songdict = {}
-		# self.mplay = mplayer(muted=True)
 	
 	def __del__(self):
 		for song in self.songdict:
 			self.remove(song)
-		# del self.mplay
 	
 	def remove(self,song):
 		if song in self.songdict:
@@ -19,33 +16,30 @@ class SongInfo:
 		if song in self.songdict:
 			return self.songdict[song]
 		else:
-			details = songdetails.scan(song)
-			info = {'filename': song}
-			attributes = [
-				'album',
-				'artist',
-				'bitrate',
-				'composer',
-				'duration',
-				'filepath',
-				'genre',
-				'is_lossless',
-				'language',
-				'published',
-				'recorded',
-				'title',
-				'track',
-				'year',
-			]
-			for attr in attributes:
-				try:
-					if attr=='duration':
-						info[attr] = getattr(details,attr).total_seconds()
-					else:
-						info[attr] = getattr(details,attr)
-				except:
-					info[attr] = None
-			# info = self.mplay.playFile(song)
+			details = tinytag.TinyTag.get(song)
+			info = {
+				'filename': song,
+				'album': details.album,
+				'artist': details.artist,
+				'bitrate': details.bitrate,
+				'albumartist': details.albumartist,
+				'samplerate': details.samplerate,
+				'composer': details.composer,
+				'duration': details.duration,
+				'filepath': song,
+				'genre': details.genre,
+				'year': details.year,
+				'title': details.title,
+				'track': details.track,
+				'track_total': details.track_total,
+				'audio_offset': details.audio_offset,
+				'channels': details.channels,
+				'comment': details.comment,
+				'disc': details.disc,
+				'disc_total': details.disc_total,
+				'filesize': details.filesize,
+				'samplerate': details.samplerate,
+			}
 			self.songdict[song] = info
 			return info
 	
