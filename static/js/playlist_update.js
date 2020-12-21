@@ -114,26 +114,33 @@ function guess_info(filename) {
 function makediv(class_type,children) {
 	var div = document.createElement('div');
 	div.setAttribute("class",class_type);
+	updateelemchildren(div, children);
+	return div;
+}
+
+function updateelemchildren(elem, children, clear=true) {
+	if(clear) {
+		elem.innerHTML = '';
+	}
 	var i;
 	for (i = 0; i < children.length; ++i) {
 		if(typeof(children[i])=="string") {
-			div.appendChild(document.createTextNode(children[i]));
+			elem.appendChild(document.createTextNode(children[i]));
 		} else if(typeof(children[i])=="number") {
-			div.appendChild(document.createTextNode(children[i]));
+			elem.appendChild(document.createTextNode(children[i]));
 		} else if (children[i]==null || children[i]==undefined) {
-			// div.appendChild(document.createTextNode("unknown"));
+			// elem.appendChild(document.createTextNode("unknown"));
 		} else {
-			div.appendChild(children[i]);
+			elem.appendChild(children[i]);
 		}
 	}
-	return div;
 }
 
 function dur_to_str(duration) {
 	var sec_num = duration;
 	var hours   = Math.floor(sec_num / 3600);
 	var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
-	var seconds = sec_num - (hours * 3600) - (minutes * 60);
+	var seconds = Math.round(sec_num - (hours * 3600) - (minutes * 60));
 	
 	if (seconds < 10) {seconds = "0"+seconds;}
 	if (hours==0) {
@@ -305,7 +312,7 @@ function getcurrentsonglinks(song_info,pos) {
 function update_cur_song(cur_song,song_info,pos) {
 	if(song_info!=undefined) {
 		// cur_song.innerHTML = song_info['filename'] + pos['fraction'];
-		cur_song.innerHTML = '';
+		// cur_song.innerHTML = '';
 		var top_row_items = [
 			makediv("flexheader padded",[song_info['track']]),
 			makediv("flexitembasisauto4 padded bigger",[song_info['title']]),
@@ -315,27 +322,42 @@ function update_cur_song(cur_song,song_info,pos) {
 			makediv("flexitembasisauto padded",[song_info['genre']]),
 			makediv("flexheader padded",[dur_to_str(pos['pos']),'/',dur_to_str(pos['length'])]),
 		]
-		var top_row = makediv("flexbox_horiz_wrap fullwidth",top_row_items);
-		cur_song.appendChild(top_row);
+		if(cur_song.getElementsByClassName('cur_song_top_row')[0]==undefined) {
+			cur_song.appendChild(makediv("cur_song_top_row flexbox_horiz_wrap fullwidth",top_row_items));
+		} else {
+			updateelemchildren(cur_song.getElementsByClassName('cur_song_top_row')[0], top_row_items);
+		}
+		
 		var bot_row_items = [
 			makediv("flexitembasisauto padded",['Composer: ',song_info['composer']]),
 			makediv("flexitembasisauto4 padded tiny",['Filename: ',song_info['filename']]),
 			getcurrentsonglinks(song_info,pos),
 		]
-		var bot_row = makediv("flexbox_horiz_wrap fullwidth smaller",bot_row_items);
-		cur_song.appendChild(bot_row);
-		var progress_bar = makediv("progress-bar",[]);
-		// progress_bar.style.width=((pos[fraction]*100).toString())+"%";
+		if(cur_song.getElementsByClassName('cur_song_bot_row')[0]==undefined) {
+			cur_song.appendChild(makediv("cur_song_bot_row flexbox_horiz_wrap fullwidth smaller",bot_row_items));
+		} else {
+			updateelemchildren(cur_song.getElementsByClassName('cur_song_bot_row')[0], bot_row_items);
+		}
+
+		if(cur_song.getElementsByClassName('cur_song_progress')[0]==undefined) {
+			cur_song.appendChild(makediv("cur_song_progress progress progress-striped active",[]));
+		}
+		if(cur_song.getElementsByClassName('cur_song_progress')[0].getElementsByClassName('cur_song_progress_bar')[0]==undefined) {
+			cur_song.getElementsByClassName('cur_song_progress')[0].appendChild(makediv("cur_song_progress_bar progress-bar",[]));
+			console.log(cur_song.getElementsByClassName('cur_song_progress')[0].getElementsByClassName('cur_song_progress_bar')[0]);
+		}
 		var prog = pos['fraction']*100;
-		progress_bar.style.width=prog.toString() + "%";
-		var progress = makediv("progress progress-striped active",[progress_bar]);
-		cur_song.appendChild(progress);
+		cur_song.getElementsByClassName('cur_song_progress')[0].getElementsByClassName('cur_song_progress_bar')[0].style.width=prog.toString() + "%";
+
 		var volume_val = pos['vol'];
 		var volume_slider = makeslider(0,100,1,volume_val,function(new_vol) {
 			setVolume(new_vol);
 		});
-		var volume = makediv("volume-slider",[volume_slider]);
-		cur_song.appendChild(volume);
+		if(cur_song.getElementsByClassName('cur_song_volume_slider')[0]==undefined) {
+			cur_song.appendChild(makediv("cur_song_volume_slider volume-slider",[volume_slider]));
+		} else {
+			updateelemchildren(cur_song.getElementsByClassName('cur_song_volume_slider')[0], [volume_slider]);
+		}
 	}
 }
 
