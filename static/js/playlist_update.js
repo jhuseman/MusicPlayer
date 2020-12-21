@@ -1,5 +1,5 @@
 function encode_song_id(song) {
-	return song.replace(/\//g,'|');
+	return encodeURI(song).replace(/\//g,'%2F');
 }
 
 function pause() {
@@ -344,7 +344,6 @@ function update_cur_song(cur_song,song_info,pos) {
 		}
 		if(cur_song.getElementsByClassName('cur_song_progress')[0].getElementsByClassName('cur_song_progress_bar')[0]==undefined) {
 			cur_song.getElementsByClassName('cur_song_progress')[0].appendChild(makediv("cur_song_progress_bar progress-bar",[]));
-			console.log(cur_song.getElementsByClassName('cur_song_progress')[0].getElementsByClassName('cur_song_progress_bar')[0]);
 		}
 		var prog = pos['fraction']*100;
 		cur_song.getElementsByClassName('cur_song_progress')[0].getElementsByClassName('cur_song_progress_bar')[0].style.width=prog.toString() + "%";
@@ -512,7 +511,6 @@ function update_all_songs_req(target) {
 }
 
 function init() {
-	console.log('init');
 	var playlist = document.getElementById("playlist");
 	var cur_song = document.getElementById("current_song");
 	var all_songs = document.getElementById("all_songs");

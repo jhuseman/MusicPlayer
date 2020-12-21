@@ -6,9 +6,11 @@ import threading
 import time
 import json
 import guavacado
+import os
+import argparse
 
 def decode_song_id(id):
-	return id.replace('|','/')
+	return id
 
 class MusicInterface():
 	def __init__(self,host,music):
@@ -116,8 +118,18 @@ def startMusicInterface(port,mus_dir, init_vol=75, init_paused=True):
 	host.stop_service()
 
 if __name__=="__main__":
-	mus_dir='/mnt/usb/Christmas/'
+	parser = argparse.ArgumentParser(description='Play music out of a directory and host a web interface to configure it.')
+	parser.add_argument('-d', '--dir', '--mus_dir', dest='mus_dir', type=str, default='/mnt/usb/Christmas/',
+		help='directory in which to search for music - default: /mnt/usb/Christmas/')
+	parser.add_argument('-v', '--vol', '--init_vol', dest='init_vol', type=int, default=75,
+		help='initial volume, on a scale of 0 - 100 - default: 75')
+	parser.add_argument('-p', '--play', '--playing', '--start_playing', dest='init_paused', action='store_false',
+		help='start playing automatically without user input')
+	parser.add_argument('--port', '--port_no', dest='port_no', type=int, default=80,
+		help='port number to run web interface - default: 80')
+	args = parser.parse_args()
+	# mus_dir='/mnt/usb/Christmas/'
 	# mus_dir='/mnt/c/Users/jdhus/OneDrive/Music/Christmas/'
 	# mus_dir='C:\\Users\\jdhus\\OneDrive\\Music\\Christmas\\'
 	# mus_dir='C:\\Users\\jhuseman\\OneDrive\\Music\\Christmas\\'
-	startMusicInterface(80,mus_dir, init_vol=75, init_paused=True)
+	startMusicInterface(args.port_no,args.mus_dir, init_vol=args.init_vol, init_paused=args.init_paused)
