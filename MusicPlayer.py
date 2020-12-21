@@ -12,7 +12,6 @@ def decode_song_id(id):
 
 class MusicInterface():
 	def __init__(self,host,music):
-		self.stopping = False
 		self.host = host
 		self.web_interface = guavacado.WebInterface(host=self.host)
 		self.web_files = guavacado.WebFileInterface(host=self.host, staticdir='static')
