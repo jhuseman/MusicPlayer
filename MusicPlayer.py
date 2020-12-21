@@ -116,8 +116,8 @@ def startMusicInterface(port,mus_dir, init_vol=75, init_paused=True):
 	host.stop_service()
 
 if __name__=="__main__":
-	# mus_dir='/mnt/usb/Christmas/'
+	mus_dir='/mnt/usb/Christmas/'
 	# mus_dir='/mnt/c/Users/jdhus/OneDrive/Music/Christmas/'
 	# mus_dir='C:\\Users\\jdhus\\OneDrive\\Music\\Christmas\\'
-	mus_dir='C:\\Users\\jhuseman\\OneDrive\\Music\\Christmas\\'
+	# mus_dir='C:\\Users\\jhuseman\\OneDrive\\Music\\Christmas\\'
 	startMusicInterface(80,mus_dir, init_vol=75, init_paused=True)
