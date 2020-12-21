@@ -9,13 +9,11 @@ import guavacado
 import os
 import argparse
 
-def decode_song_id(id):
-	return id
-
 class MusicInterface():
-	def __init__(self,port,mus_dir, init_vol=75, init_paused=True):
+	def __init__(self,port,mus_dir, init_vol=75, init_paused=True, queue_size=5):
 		self.host = guavacado.WebHost()
 		self.host.add_addr(port=port)
+		self.queue_size = queue_size
 		self.music = Music.Music(mus_dir=mus_dir, init_vol=init_vol, init_paused=init_paused)
 		self.web_interface = guavacado.WebInterface(host=self.host)
 		self.web_files = guavacado.WebFileInterface(host=self.host, staticdir='static')
@@ -38,17 +36,17 @@ class MusicInterface():
 	
 	def ADD_SONG(self,song):
 		"""add song to end of playlist"""
-		self.music.addSong(decode_song_id(song))
+		self.music.addSong(song)
 		return json.dumps(self.music.getDict(), indent=4)
 	
 	def ADD_SONG_POS(self,song,pos):
 		"""add song to playlist at pos"""
-		self.music.addSongPos(int(pos),decode_song_id(song))
+		self.music.addSongPos(int(pos),song)
 		return json.dumps(self.music.getDict(), indent=4)
 	
 	def DEL_SONG(self,song):
 		"""remove song from playlist"""
-		self.music.removeSong(decode_song_id(song))
+		self.music.removeSong(song)
 		return json.dumps(self.music.getDict(), indent=4)
 	
 	def SET_VOL(self,vol):
@@ -72,7 +70,7 @@ class MusicInterface():
 	
 	def GET_SONG_INFO(self,song):
 		"""get information about song"""
-		return json.dumps(self.music.getSongInfo(decode_song_id(song)), indent=4)
+		return json.dumps(self.music.getSongInfo(song), indent=4)
 	
 	def GET_ALL_SONG_INFO(self):
 		"""get information about all songs"""
@@ -91,9 +89,9 @@ class MusicInterface():
 		self.music.unpause()
 		return json.dumps(self.music.getDict(), indent=4)
 
-	def playlist_maintain(self,min_items):
+	def playlist_maintain(self):
 		while not self.stopping:
-			if len(self.music.getSongList())<min_items:
+			if len(self.music.getSongList())<self.queue_size:
 				avail = self.music.getAvailableSongs()
 				if len(avail) > 0:
 					rand = random.randint(0,len(avail)-1)
@@ -101,14 +99,14 @@ class MusicInterface():
 						self.music.addSong(avail[rand])
 			time.sleep(0.5)
 
-	def playlist_maintain_async(self, min_items):
-		self.playlist_maintain_thread = threading.Thread(target=self.playlist_maintain, args=(min_items,), name='PlaylistFiller')
+	def playlist_maintain_async(self):
+		self.playlist_maintain_thread = threading.Thread(target=self.playlist_maintain, name='PlaylistFiller')
 		self.playlist_maintain_thread.start()
 	
 	def start(self):
 		self.host.start_service()
 		self.stopping = False
-		self.playlist_maintain_async(5)
+		self.playlist_maintain_async()
 		guavacado.wait_for_keyboardinterrupt()
 		# exiting after returns - shut everything down!
 		self.stopping = True
@@ -124,6 +122,8 @@ if __name__=="__main__":
 		help='initial volume, on a scale of 0 - 100 - default: 75')
 	parser.add_argument('-p', '--play', '--playing', '--start_playing', dest='init_paused', action='store_false',
 		help='start playing automatically without user input')
+	parser.add_argument('-n', '-q', '--num', '--num_queue', '--queue', '--queue_size', dest='queue_size', type=int, default=5,
+		help='number of songs to keep in the queue automatically - keep above 1 to play continuously - default: 5')
 	parser.add_argument('--port', '--port_no', dest='port_no', type=int, default=80,
 		help='port number to run web interface - default: 80')
 	args = parser.parse_args()
@@ -131,4 +131,4 @@ if __name__=="__main__":
 	# mus_dir='/mnt/c/Users/jdhus/OneDrive/Music/Christmas/'
 	# mus_dir='C:\\Users\\jdhus\\OneDrive\\Music\\Christmas\\'
 	# mus_dir='C:\\Users\\jhuseman\\OneDrive\\Music\\Christmas\\'
-	MusicInterface(args.port_no,args.mus_dir, init_vol=args.init_vol, init_paused=args.init_paused).start()
+	MusicInterface(args.port_no,args.mus_dir, init_vol=args.init_vol, init_paused=args.init_paused, queue_size=args.queue_size).start()
